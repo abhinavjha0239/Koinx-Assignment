@@ -3,9 +3,27 @@ const express = require('express');
 const { connectDB } = require('./utils/db');
 const cryptoRoutes = require('./routes/cryptoRoutes');
 const { initNats, closeNats } = require('./services/natsService');
+const fs = require('fs');
+const path = require('path');
 
 const app = express();
 app.use(express.json());
+
+// Simple file logger: write all console logs to logs/server.log
+const logDir = path.join(__dirname, '../logs');
+const logFile = path.join(logDir, 'server.log');
+if (!fs.existsSync(logDir)) fs.mkdirSync(logDir, { recursive: true });
+// Clear the log file on server start
+fs.writeFileSync(logFile, '');
+const logStream = fs.createWriteStream(logFile, { flags: 'a' });
+['log', 'error', 'warn'].forEach((method) => {
+  const orig = console[method];
+  console[method] = (...args) => {
+    const msg = `[${new Date().toISOString()}] [${method.toUpperCase()}] ${args.join(' ')}\n`;
+    logStream.write(msg);
+    orig.apply(console, args);
+  };
+});
 
 app.use(cryptoRoutes);
 

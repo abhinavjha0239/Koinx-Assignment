@@ -1,4 +1,6 @@
 const cryptoService = require('../services/cryptoService');
+const fs = require('fs');
+const path = require('path');
 
 /**
  * Get latest stats for a specific coin
@@ -75,8 +77,43 @@ async function getDeviation(req, res) {
   }
 }
 
+/**
+ * Manually trigger store crypto stats
+ */
+async function updateStats(req, res) {
+  try {
+    await cryptoService.storeCryptoStats();
+    return res.json({ message: 'Crypto stats updated successfully' });
+  } catch (error) {
+    console.error('Error in updateStats controller:', error.message);
+    return res.status(500).json({ error: error.message });
+  }
+}
+
+/**
+ * Get last 800 lines of the server log
+ */
+async function getLog(req, res) {
+  try {
+    const logPath = path.resolve(__dirname, '../../logs/server.log');
+    if (!fs.existsSync(logPath)) {
+      return res.status(404).json({ error: 'Log file not found' });
+    }
+    const data = fs.readFileSync(logPath, 'utf-8');
+    // Remove any trailing empty line for accurate count
+    const lines = data.trimEnd().split('\n');
+    const lastLines = lines.slice(-800).join('\n');
+    res.setHeader('Content-Type', 'text/plain; charset=utf-8');
+    res.status(200).send(lastLines);
+  } catch (error) {
+    console.error('Error reading logs:', error.message);
+    res.status(500).json({ error: 'Failed to read logs', details: error.message });
+  }
+}
 
 module.exports = {
   getStats,
-  getDeviation
+  getDeviation,
+  updateStats,
+  getLog
 };
