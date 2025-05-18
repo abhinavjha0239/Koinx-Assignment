@@ -1,0 +1,19 @@
+{
+  "name": "worker-server",
+  "version": "1.0.0",
+  "description": "Worker server for cryptocurrency statistics background jobs",
+  "main": "src/index.js",
+  "scripts": {
+    "start": "node src/index.js",
+    "dev": "nodemon src/index.js",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "dependencies": {
+    "dotenv": "^16.3.1",
+    "nats": "^2.18.0",
+    "node-cron": "^3.0.2"
+  },
+  "devDependencies": {
+    "nodemon": "^3.0.1"
+  }
+} 

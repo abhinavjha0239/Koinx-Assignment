@@ -1,6 +1,8 @@
+require('dotenv').config();
 const express = require('express');
 const { connectDB } = require('./utils/db');
 const cryptoRoutes = require('./routes/cryptoRoutes');
+const { initNats, closeNats } = require('./services/natsService');
 
 const app = express();
 app.use(express.json());
@@ -16,11 +18,24 @@ const PORT = process.env.PORT ;
 
 async function startServer() {
   try {
+    console.log('Starting API server...');
     await connectDB();
     console.log('MongoDB connected successfully');
-    
+
+    await initNats();
+    console.log('NATS connected successfully');
+    console.log('Listening for crypto.update events...');
+
     app.listen(PORT, () => {
       console.log(`API Server running on port ${PORT}`);
+    });
+
+    // Handle graceful shutdown
+    process.on('SIGINT', async () => {
+      console.log('Shutting down API server...');
+      await require('./services/natsService').closeNats();
+      await require('./utils/db').closeDB();
+      process.exit(0);
     });
   } catch (error) {
     console.error('Error starting server:', error.message);
