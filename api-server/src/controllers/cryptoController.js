@@ -95,14 +95,18 @@ async function updateStats(req, res) {
  */
 async function getLog(req, res) {
   try {
-    const logPath = path.resolve(__dirname, '../../logs/server.log');
+    const { getLogPath } = require('../utils/logger');
+    const logPath = getLogPath();
+    
     if (!fs.existsSync(logPath)) {
       return res.status(404).json({ error: 'Log file not found' });
     }
+    
     const data = fs.readFileSync(logPath, 'utf-8');
     // Remove any trailing empty line for accurate count
     const lines = data.trimEnd().split('\n');
     const lastLines = lines.slice(-800).join('\n');
+    
     res.setHeader('Content-Type', 'text/plain; charset=utf-8');
     res.status(200).send(lastLines);
   } catch (error) {
