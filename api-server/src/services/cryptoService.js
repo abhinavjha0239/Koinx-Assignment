@@ -72,6 +72,26 @@ async function storeCryptoStats() {
   }
 }
 
+/**
+ * Get the latest stats for a specific coin
+ * @param {string} coin - The coin ID
+ * @returns {Promise<Object>} - The latest cryptocurrency stats
+ */
+async function getLatestStats(coin) {
+  const latestStat = await CryptoStat.findOne({ coin })
+    .sort({ timestamp: -1 })
+    .lean();
+  if (!latestStat) {
+    return null;
+  }
+  return {
+    price: latestStat.price,
+    marketCap: latestStat.marketCap,
+    "24hChange": latestStat.change24h
+  };
+}
+
 module.exports = {
-  storeCryptoStats
+  storeCryptoStats,
+  getLatestStats
 };
