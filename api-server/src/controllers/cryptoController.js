@@ -47,6 +47,36 @@ async function getStats(req, res) {
   }
 }
 
+/**
+ * Calculate standard deviation for a specific coin
+ * @param {Object} req - Express request object
+ * @param {Object} res - Express response object
+ */
+async function getDeviation(req, res) {
+  try {
+    const { coin } = req.query;
+    
+    if (!coin) {
+      return res.status(400).json({ error: 'Coin parameter is required' });
+    }
+    
+    // Validate coin
+    if (!['bitcoin', 'ethereum', 'matic-network'].includes(coin)) {
+      return res.status(400).json({ 
+        error: 'Invalid coin. Supported coins are: bitcoin, ethereum, matic-network'
+      });
+    }
+    
+    const deviation = await cryptoService.calculateDeviation(coin);
+    return res.json({ deviation });
+  } catch (error) {
+    console.error('Error in getDeviation controller:', error.message);
+    return res.status(500).json({ error: error.message });
+  }
+}
+
+
 module.exports = {
-  getStats
+  getStats,
+  getDeviation
 };
